@@ -16,24 +16,29 @@ FROM ubuntu:16.04
 
 MAINTAINER Dockerfiles
 
-# Install required packages and remove the apt packages cache when done.
+# Use aliyun mirror as apt and pypi source
+COPY sources.list /etc/apt/sources.list
+COPY pip.conf /root/.pip/pip.conf
 
+# Install required packages and remove the apt packages cache when done.
 RUN apt-get update && \
-    apt-get upgrade -y && \ 	
+    apt-get upgrade -y && \
     apt-get install -y \
-	git \
-	python3 \
-	python3-dev \
-	python3-setuptools \
-	python3-pip \
-	nginx \
-	supervisor \
-	sqlite3 && \
-	pip3 install -U pip setuptools && \
-   rm -rf /var/lib/apt/lists/*
+        git \
+        nginx \
+        python3 \
+        python3-dev \
+        python3-pip \
+        python3-setuptools \
+        sqlite3 \
+        supervisor && \
+    pip3 install -U pip setuptools && \
+    apt-get autoclean && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
 
 # install uwsgi now because it takes a little while
-RUN pip3 install uwsgi
+RUN pip3 install --no-cache-dir uwsgi
 
 # setup all the configfiles
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
@@ -44,7 +49,7 @@ COPY supervisor-app.conf /etc/supervisor/conf.d/
 # to prevent re-installing (all your) dependencies when you made a change a line or two in your app.
 
 COPY app/requirements.txt /home/docker/code/app/
-RUN pip3 install -r /home/docker/code/app/requirements.txt
+RUN pip3 install --no-cache-dir -r /home/docker/code/app/requirements.txt
 
 # add (the rest of) our code
 COPY . /home/docker/code/
