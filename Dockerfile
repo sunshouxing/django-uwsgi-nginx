@@ -22,9 +22,7 @@ COPY pip.conf /root/.pip/pip.conf
 
 # Install required packages and remove the apt packages cache when done.
 RUN apt-get update && \
-    apt-get upgrade -y && \
     apt-get install -y \
-        git \
         nginx \
         python3 \
         python3-dev \
@@ -32,26 +30,24 @@ RUN apt-get update && \
         python3-setuptools \
         sqlite3 \
         supervisor && \
-    pip3 install -U pip setuptools && \
-    apt-get autoclean && \
-    apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
 
-# install uwsgi now because it takes a little while
-RUN pip3 install --no-cache-dir uwsgi
+# Install uwsgi
+RUN pip3 install --no-cache-dir --disable-pip-version-check uwsgi
 
 # setup all the configfiles
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 COPY nginx-app.conf /etc/nginx/sites-available/default
 COPY supervisor-app.conf /etc/supervisor/conf.d/
 
-# COPY requirements.txt and RUN pip install BEFORE adding the rest of your code, this will cause Docker's caching mechanism
-# to prevent re-installing (all your) dependencies when you made a change a line or two in your app.
-
+# Copy requirements and install app dependencies
 COPY app/requirements.txt /home/docker/code/app/
-RUN pip3 install --no-cache-dir -r /home/docker/code/app/requirements.txt
+RUN pip3 install \
+    --no-cache-dir \
+    --disable-pip-version-check \
+    --requirement /home/docker/code/app/requirements.txt
 
-# add (the rest of) our code
+# Add (the rest of) our code
 COPY . /home/docker/code/
 
 # install django, normally you would remove this step because your project would already
