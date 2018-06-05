@@ -22,12 +22,11 @@ touched most files here.
 ### Build and run
 #### Build with python3
 * `docker build -t webapp .`
-* `docker run -d -p 80:80 webapp`
-* go to 127.0.0.1 to see if works
-
-#### Build with python2
-* `docker build -f Dockerfile-py2 -t webapp .`
-* `docker run -d -p 80:80 webapp`
+* `cd ./app/`
+* `python manage.py migrate`
+* `python manage.py createsuperusermigrate`
+* `python manage.py collectstatic`
+* `docker run -d -v $(pwd):/home/docker/code/app -p 80:80 --name sophon webapp`
 * go to 127.0.0.1 to see if works
 
 ### How to insert your application
