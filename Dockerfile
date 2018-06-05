@@ -41,18 +41,14 @@ COPY nginx-app.conf /etc/nginx/sites-available/default
 COPY supervisor-app.conf /etc/supervisor/conf.d/
 
 # Copy requirements and install app dependencies
-COPY app/requirements.txt /home/docker/code/app/
+COPY requirements.txt /home/docker/code/
 RUN pip3 install \
     --no-cache-dir \
     --disable-pip-version-check \
-    --requirement /home/docker/code/app/requirements.txt
+    --requirement /home/docker/code/requirements.txt
 
 # Add (the rest of) our code
 COPY . /home/docker/code/
-
-# install django, normally you would remove this step because your project would already
-# be installed in the code/app/ directory
-RUN django-admin.py startproject website /home/docker/code/app/
 
 EXPOSE 80
 CMD ["supervisord", "-n"]
